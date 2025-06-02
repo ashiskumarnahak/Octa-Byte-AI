@@ -1,0 +1,57 @@
+pipeline {
+    agent any
+
+    environment {
+        DEPLOY_SERVER = '3.90.220.66'
+        DEPLOY_PATH = '/home/ubuntu/myapp'
+        REPO = 'https://github.com/ashiskumarnahak/BID.git'
+    }
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                git credentialsId: 'github-pat', branch: 'main', url: "${REPO}"
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sshagent(['my-ssh-key']) {
+                    // "my-ssh-key" is the SSH private key Jenkins uses to SSH into the server
+                    sh """
+                    ssh -o StrictHostKeyChecking=no ubuntu@${DEPLOY_SERVER} '
+                        if [ ! -d ${DEPLOY_PATH} ]; then
+                            git clone https://github.com/ashiskumarnahak/BID.git ${DEPLOY_PATH};
+                        else
+                            cd ${DEPLOY_PATH} && git pull;
+                        fi &&
+                        cd ${DEPLOY_PATH} &&
+                        npm install &&
+                        pm2 restart all || pm2 start index.js --name myapp
+                    '
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            mail to: 'nahakashiskumar@gmail.com.com',
+                 subject: "Jenkins Build Failed",
+                 body: "Check Jenkins build ${env.BUILD_URL}"
+        }
+    }
+}
