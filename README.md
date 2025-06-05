@@ -19,7 +19,7 @@ I have created two EC2 instances, installed all the required software, deployed 
 This is your Load Balancer DNS: http://byte-lb-868216908.us-east-1.elb.amazonaws.com/. You can use this URL to access the deployed application.
 
 
-### 2. CI/CD Pipeline (Jenkins)- http://54.147.19.193:8080/
+### 2. CI/CD Pipeline (Jenkins)- http://3.90.220.66:8080/
 - Clones code from GitHub
 - Installs react-js dependencies (`npm install`)
 - Optional build step (`npm run build`)
